@@ -1,96 +1,1810 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Profile System</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aura Pro Market - Ultimate Commerce Platform</title>
+  <style>
+    /* ==========================================================================
+       1. Global Variables & Theme Engine
+       ========================================================================== */
+    :root {
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --secondary: #0f172a;
+      --background: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #334155;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --accent: #6366f1;
+      --nav-bg: rgba(15, 23, 42, 0.95);
+      --modal-bg: #ffffff;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      --radius: 12px;
+    }
+
+    [data-theme="dark"] {
+      --primary: #10b981;
+      --primary-hover: #34d399;
+      --secondary: #f8fafc;
+      --background: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --nav-bg: rgba(15, 23, 42, 0.98);
+      --modal-bg: #1e293b;
+      --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      line-height: 1.5;
+      padding-top: 110px;
+    }
+
+    /* Sales Announcement Countdown Header */
+    .announcement-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: linear-gradient(90deg, #6366f1, #10b981);
+      color: #fff;
+      text-align: center;
+      padding: 6px 12px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      z-index: 101;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+    }
+    .countdown-timer {
+      background: rgba(0,0,0,0.25);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: monospace;
+    }
+
+    /* ==========================================================================
+       2. Toast Notifications
+       ========================================================================== */
+    #toast-container {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* ==========================================================================
+       3. Header Navigation Bar
+       ========================================================================== */
+    header {
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      color: #fff;
+      position: fixed;
+      top: 32px; left: 0; right: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0.85rem 1.5rem;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .logo span { color: var(--primary); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .select-currency {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.4rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      outline: none;
+      cursor: pointer;
+    }
+    .select-currency option { background: #0f172a; color: #fff; }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+    .icon-btn:hover { background: rgba(255, 255, 255, 0.25); }
+
+    .btn-nav-profile {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.4rem 0.8rem;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-avatar-sm {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .btn-cart {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0.55rem 1.2rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+    }
+    .btn-cart:hover { background: var(--primary-hover); }
+
+    .cart-badge {
+      background: #fff;
+      color: #0f172a;
+      border-radius: 50%;
+      padding: 2px 7px;
+      font-size: 0.8rem;
+      font-weight: 800;
+    }
+
+    /* ==========================================================================
+       4. Hero Banner & Controls
+       ========================================================================== */
+    .hero {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #fff;
+      padding: 3rem 1.5rem 2rem;
+    }
+
+    .hero-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .hero p { color: #94a3b8; font-size: 1.1rem; margin-bottom: 2rem; }
+
+    .controls-wrapper {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1.25rem;
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .controls-top-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .search-box { flex: 2; min-width: 240px; position: relative; }
+    .search-box input {
+      width: 100%;
+      padding: 0.75rem 1rem 0.75rem 2.5rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      outline: none;
+    }
+    .search-icon { position: absolute; left: 0.85rem; top: 50%; transform: translateY(-50%); color: #94a3b8; }
+
+    .sort-filter {
+      flex: 1;
+      min-width: 160px;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      outline: none;
+      cursor: pointer;
+    }
+    .sort-filter option { background: #0f172a; color: #fff; }
+
+    .category-pills {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      padding-bottom: 0.2rem;
+    }
+
+    .pill-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 0.4rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .pill-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .price-range-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      color: #94a3b8;
+      font-size: 0.85rem;
+    }
+    .price-range-wrapper input { flex: 1; accent-color: var(--primary); }
+
+    /* Track Order Quick Bar */
+    .quick-track-bar {
+      max-width: 1280px;
+      margin: 1.5rem auto 0;
+      padding: 0 1.5rem;
+    }
+    .track-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      box-shadow: var(--shadow);
+    }
+    .track-box input {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--background);
+      color: var(--text);
+    }
+
+    /* ==========================================================================
+       5. Product Cards Grid System
+       ========================================================================== */
+    .container { max-width: 1280px; margin: 2rem auto 4rem; padding: 0 1.5rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1.5rem; }
+
+    .product-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+
+    .stock-badge {
+      position: absolute;
+      top: 10px; left: 10px;
+      background: rgba(15, 23, 42, 0.75);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      backdrop-filter: blur(4px);
+      z-index: 5;
+    }
+
+    .wishlist-btn {
+      position: absolute;
+      top: 10px; right: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      border: none;
+      color: #fff;
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      z-index: 5;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .wishlist-btn.active { color: #ef4444; background: rgba(255, 255, 255, 0.9); }
+
+    .product-image-wrap { width: 100%; height: 210px; overflow: hidden; cursor: pointer; }
+    .product-image { width: 100%; height: 100%; object-fit: cover; }
+    .product-info { padding: 1.25rem; display: flex; flex-direction: column; flex-grow: 1; }
+    .product-category-tag { font-size: 0.75rem; text-transform: uppercase; color: var(--primary); font-weight: 700; margin-bottom: 0.2rem; }
+    .product-title { font-size: 1.05rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; cursor: pointer; }
+    .product-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+    .product-price { font-size: 1.25rem; font-weight: 800; color: var(--text); }
+
+    .variant-selector {
+      display: flex; gap: 6px; margin: 0.5rem 0; flex-wrap: wrap;
+    }
+    .variant-chip {
+      font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border);
+      cursor: pointer; background: var(--background);
+    }
+    .variant-chip.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+    .btn-add-cart {
+      background: var(--secondary);
+      color: var(--background);
+      border: none;
+      padding: 0.6rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-add-cart:hover { opacity: 0.9; }
+
+    /* ==========================================================================
+       6. Profile UI & Navigation System
+       ========================================================================== */
+    .profile-nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      overflow-x: auto;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .profile-nav-tab {
+      background: var(--background);
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .profile-nav-tab.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .profile-header-card {
+      background: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .profile-avatar-wrapper { position: relative; }
+    .profile-avatar-img {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--primary);
+    }
+
+    .membership-badge {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      display: inline-block;
+      margin-top: 2px;
+    }
+
+    .profile-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+    }
+    .stat-card {
+      background: var(--background);
+      border: 1px solid var(--border);
+      padding: 0.85rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .stat-val { font-size: 1.3rem; font-weight: 800; color: var(--primary); }
+    .stat-lbl { font-size: 0.75rem; color: var(--text-muted); font-weight: 600; }
+
+    /* Modals & Cart Drawer */
+    .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 150; display: none; }
+    .overlay.active { display: block; }
+
+    .cart-drawer {
+      position: fixed; top: 0; right: -100%; width: 100%; max-width: 460px; height: 100%;
+      background: var(--card-bg); box-shadow: var(--shadow); transition: right 0.3s cubic-bezier(0.16, 1, 0.3, 1); z-index: 200;
+      display: flex; flex-direction: column;
+    }
+    .cart-drawer.active { right: 0; }
+    
+    .drawer-header {
+      padding: 1.25rem; background: #0f172a; color: #fff;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    
+    .free-shipping-bar {
+      background: var(--background);
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .progress-track {
+      width: 100%; height: 6px; background: var(--border);
+      border-radius: 10px; margin-top: 6px; overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%; background: var(--primary); width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .drawer-body { padding: 1.25rem; flex-grow: 1; overflow-y: auto; }
+    
+    .cart-item {
+      display: flex; gap: 1rem; align-items: center;
+      padding: 0.85rem 0; border-bottom: 1px solid var(--border);
+    }
+    .cart-item-img { width: 65px; height: 65px; border-radius: 8px; object-fit: cover; }
+    .cart-item-details { flex-grow: 1; }
+    .cart-item-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
+    .cart-item-price { font-weight: 700; color: var(--primary); font-size: 0.9rem; }
+    .cart-item-variant { font-size: 0.75rem; color: var(--text-muted); }
+
+    .qty-controls {
+      display: flex; align-items: center; gap: 6px; margin-top: 6px;
+    }
+    .qty-btn {
+      width: 24px; height: 24px; border-radius: 4px; border: 1px solid var(--border);
+      background: var(--background); color: var(--text); cursor: pointer; font-weight: bold;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .qty-btn:hover { background: var(--border); }
+    .cart-action-link {
+      background: none; border: none; color: var(--accent); cursor: pointer;
+      font-size: 0.75rem; text-decoration: underline; margin-top: 4px; display: inline-block;
+    }
+
+    .drawer-footer { padding: 1.25rem; border-top: 1px solid var(--border); background: var(--background); }
+
+    .applied-promo-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(16, 185, 129, 0.15); color: var(--primary);
+      padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.75rem;
+    }
+
+    .express-checkout-row {
+      display: flex; gap: 8px; margin-top: 0.5rem;
+    }
+    .btn-express {
+      flex: 1; padding: 0.6rem; border-radius: 8px; border: none;
+      font-weight: 700; font-size: 0.85rem; cursor: pointer; color: #fff;
+    }
+    .btn-apple { background: #000; }
+    .btn-google { background: #4285f4; }
+
+    .center-modal {
+      position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95);
+      width: 92%; max-width: 520px; background: var(--modal-bg); border-radius: var(--radius);
+      padding: 2rem; box-shadow: var(--shadow); z-index: 200; opacity: 0; pointer-events: none;
+      transition: all 0.2s ease; max-height: 90vh; overflow-y: auto;
+    }
+    .center-modal.large-modal { max-width: 800px; }
+    .center-modal.active { opacity: 1; pointer-events: all; transform: translate(-50%, -50%) scale(1); }
+
+    .qv-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+    @media(min-width: 640px) { .qv-grid { grid-template-columns: 1fr 1fr; } }
+    
+    .gallery-main { width: 100%; height: 260px; border-radius: 8px; object-fit: cover; margin-bottom: 0.5rem; border: 1px solid var(--border); }
+    .gallery-thumbs { display: flex; gap: 8px; }
+    .gallery-thumb { width: 55px; height: 55px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 2px solid transparent; }
+    .gallery-thumb.active { border-color: var(--primary); }
+
+    .specs-table { width: 100%; font-size: 0.85rem; border-collapse: collapse; margin-top: 0.5rem; }
+    .specs-table td { padding: 6px 0; border-bottom: 1px solid var(--border); }
+    .specs-table td:first-child { font-weight: 600; color: var(--text-muted); }
+
+    .feature-list { list-style: square; padding-left: 1.2rem; font-size: 0.85rem; color: var(--text); margin-top: 0.5rem; }
+
+    .summary-line { display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 0.4rem; }
+    .summary-total { font-weight: 800; font-size: 1.15rem; border-top: 1px solid var(--border); padding-top: 0.5rem; margin-top: 0.5rem; }
+
+    .promo-row { display: flex; gap: 8px; margin-bottom: 0.75rem; }
+    .promo-row input { flex: 1; padding: 0.6rem; border: 1px solid var(--border); border-radius: 6px; background: var(--card-bg); color: var(--text); }
+    .promo-row button { padding: 0.6rem 1rem; background: var(--secondary); color: var(--background); border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .form-group input, .form-group textarea, .form-group select {
+      width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;
+      background: var(--card-bg); color: var(--text); outline: none;
+    }
+
+    .btn-submit {
+      width: 100%; background: var(--primary); color: #fff; border: none; padding: 0.8rem;
+      border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 0.5rem;
+    }
+
+    .review-item { background: var(--background); padding: 0.75rem; border-radius: 8px; margin-top: 0.5rem; font-size: 0.85rem; }
+    
+    .tracker-steps { display: flex; justify-content: space-between; margin: 1.5rem 0; position: relative; }
+    .tracker-step { text-align: center; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); z-index: 2; flex: 1; }
+    .tracker-step.completed { color: var(--primary); }
+
+    @media print {
+      body * { visibility: hidden; }
+      #printableInvoice, #printableInvoice * { visibility: visible; }
+      #printableInvoice { position: absolute; left: 0; top: 0; width: 100%; }
+    }
+  </style>
 </head>
 <body>
-  <div class="profile-card">
-    <!-- Header Banner -->
-    <div class="cover-image" id="coverDisplay">
-      <label class="cover-upload-btn">
-        📷 Change Cover
-        <input type="file" id="coverInput" accept="image/*" hidden>
-      </label>
-    </div>
 
-    <!-- Main Profile Content -->
-    <div class="profile-header">
-      <div class="avatar-container">
-        <img src="https://via.placeholder.com/120" id="avatarDisplay" alt="User Avatar">
-        <label class="avatar-upload-btn" title="Change Avatar">
-          ✎
-          <input type="file" id="avatarInput" accept="image/*" hidden>
-        </label>
+  <!-- Sales Urgency Countdown Banner -->
+  <div class="announcement-bar">
+    ⚡ FLASH SALE: Get 10% Off with code <strong>AURA10</strong>! Ends in: 
+    <span class="countdown-timer" id="salesTimer">05:42:10</span>
+  </div>
+
+  <!-- Toast Message Engine -->
+  <div id="toast-container"></div>
+
+  <!-- Header Section -->
+  <header>
+    <nav class="navbar">
+      <a href="#" class="logo">⚡ Aura<span>Store</span></a>
+      <div class="nav-actions">
+        <!-- Currency Selector -->
+        <select class="select-currency" id="currencySelector" onchange="changeCurrency(this.value)">
+          <option value="USD">USD ($)</option>
+          <option value="EUR">EUR (€)</option>
+          <option value="GBP">GBP (£)</option>
+          <option value="BDT">BDT (৳)</option>
+        </select>
+        <button class="icon-btn" onclick="toggleTheme()" title="Toggle Light/Dark Theme">🌙</button>
+        <button class="btn-nav-profile" id="authBtn" onclick="openAuthModal()">
+          <span>Sign In</span>
+        </button>
+        <button class="btn-cart" id="openCartBtn" onclick="openCartDrawer()">
+          🛒 Cart <span class="cart-badge" id="cartCount">0</span>
+        </button>
       </div>
+    </nav>
+  </header>
 
-      <div class="header-actions">
-        <button class="btn btn-primary" id="editProfileBtn">Edit Profile</button>
-      </div>
-    </div>
-
-    <!-- User Information Display -->
-    <div class="profile-info" id="viewMode">
-      <h2 id="nameDisplay">Hridoy</h2>
-      <p class="username" id="handleDisplay">@hridoy_dev</p>
-      <p class="bio" id="bioDisplay">Gaming content creator and web developer. Building cool interactive projects!</p>
+  <!-- Hero Section & Dynamic Filtering Toolbar -->
+  <section class="hero">
+    <div class="hero-container">
+      <h1>Pro Workspace Hardware</h1>
+      <p>Minimal, high-performance tools engineered for focus and speed.</p>
       
-      <div class="stats-row">
-        <div class="stat"><strong id="postsCount">24</strong><span>Posts</span></div>
-        <div class="stat"><strong id="followersCount">1.2k</strong><span>Followers</span></div>
-        <div class="stat"><strong id="followingCount">450</strong><span>Following</span></div>
-      </div>
+      <div class="controls-wrapper">
+        <div class="controls-top-row">
+          <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search components, accessories..." oninput="renderProducts()">
+          </div>
+          <select class="sort-filter" id="sortFilter" onchange="renderProducts()">
+            <option value="default">Sort: Recommended</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="rating">Highest Rated</option>
+          </select>
+        </div>
 
-      <div class="badges" id="badgesDisplay">
-        <span class="badge">Gamer</span>
-        <span class="badge">Developer</span>
-        <span class="badge">Creator</span>
+        <div class="category-pills" id="categoryPillsContainer"></div>
+
+        <div class="price-range-wrapper">
+          <span>Max Price: <strong id="priceRangeLabel">$250</strong></span>
+          <input type="range" id="priceRange" min="20" max="250" value="250" oninput="updatePriceLabel(this.value); renderProducts();">
+        </div>
       </div>
     </div>
+  </section>
 
-    <!-- Edit Form (Hidden by default) -->
-    <form class="edit-form" id="editMode" style="display: none;">
-      <div class="form-group">
-        <label>Display Name</label>
-        <input type="text" id="nameInput" maxlength="30" required>
-      </div>
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" id="handleInput" maxlength="20" required>
-      </div>
-      <div class="form-group">
-        <label>Bio</label>
-        <textarea id="bioInput" rows="3" maxlength="150"></textarea>
-        <span class="char-counter"><span id="charCount">0</span>/150</span>
-      </div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save Changes</button>
-      </div>
-    </form>
-
-    <!-- Navigation Tabs -->
-    <div class="profile-tabs">
-      <button class="tab-btn active" onclick="switchTab('posts')">Posts</button>
-      <button class="tab-btn" onclick="switchTab('activity')">Activity</button>
-      <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
-    </div>
-
-    <div class="tab-content">
-      <div id="postsTab" class="tab-pane active">
-        <p>No recent posts to show.</p>
-      </div>
-      <div id="activityTab" class="tab-pane" style="display: none;">
-        <p>Recent Activity: Joined the platform recently.</p>
-      </div>
-      <div id="settingsTab" class="tab-pane" style="display: none;">
-        <p>Account Preferences and Privacy Settings.</p>
-      </div>
+  <!-- Quick Order Tracker Bar -->
+  <div class="quick-track-bar">
+    <div class="track-box">
+      <span>📦 <strong>Track Order:</strong></span>
+      <input type="text" id="quickTrackInput" placeholder="Enter Order ID (e.g. ORD-9281)">
+      <button onclick="quickTrackOrder()" style="padding:0.6rem 1rem; background:var(--primary); color:#fff; border:none; border-radius:6px; font-weight:bold; cursor:pointer;">Track</button>
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <!-- Product Catalog Grid -->
+  <main class="container">
+    <div class="section-header">
+      <h2>Catalog Collection</h2>
+      <span id="productCountLabel" style="color: var(--text-muted); font-size: 0.9rem;"></span>
+    </div>
+    <div class="products-grid" id="productGrid"></div>
+  </main>
+
+  <!-- Background Dimming Overlay -->
+  <div class="overlay" id="overlay" onclick="closeAllModals()"></div>
+
+  <!-- Cart Slide-out Drawer -->
+  <aside class="cart-drawer" id="cartDrawer">
+    <div class="drawer-header">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <h3>Your Cart</h3>
+        <button onclick="clearCart()" style="background:none; border:none; color:#ef4444; font-size:0.75rem; cursor:pointer; font-weight:bold; text-decoration:underline;">Clear All</button>
+      </div>
+      <button style="background:none; border:none; color:#fff; font-size:1.5rem; cursor:pointer;" onclick="closeAllModals()">&times;</button>
+    </div>
+
+    <!-- Free Shipping Progress Tracker Bar -->
+    <div class="free-shipping-bar">
+      <div id="freeShippingLabel">Add items to unlock Free Shipping</div>
+      <div class="progress-track">
+        <div class="progress-fill" id="shippingProgressFill"></div>
+      </div>
+    </div>
+
+    <div class="drawer-body">
+      <div id="cartItems"></div>
+      
+      <!-- Saved For Later Section -->
+      <div id="savedForLaterSection" style="margin-top:1.5rem; border-top:1px solid var(--border); padding-top:1rem; display:none;">
+        <h4 style="font-size:0.9rem; margin-bottom:0.5rem; color:var(--text-muted);">Saved For Later</h4>
+        <div id="savedForLaterItems"></div>
+      </div>
+    </div>
+
+    <div class="drawer-footer">
+      <div id="promoTagContainer"></div>
+      
+      <div class="promo-row">
+        <input type="text" id="promoCodeInput" placeholder="Promo Code (AURA10 or SAVE20)">
+        <button onclick="applyPromoCode()">Apply</button>
+      </div>
+
+      <div id="cartSummary"></div>
+      
+      <button class="btn-submit" onclick="openCheckoutModal()">Proceed to Checkout</button>
+      
+      <div class="express-checkout-row">
+        <button class="btn-express btn-apple" onclick="expressCheckout('Apple Pay')"> Pay</button>
+        <button class="btn-express btn-google" onclick="expressCheckout('Google Pay')">G Pay</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Auth Modal (Sign In & Sign Up Modes) -->
+  <div class="center-modal" id="authModal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3 id="authModalTitle">Sign In</h3>
+      <button style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;" onclick="closeAllModals()">&times;</button>
+    </div>
+
+    <form id="authForm" onsubmit="handleAuthSubmit(event)">
+      <div class="form-group" id="nameGroup" style="display:none;">
+        <label>Full Name</label>
+        <input type="text" id="authName" placeholder="John Doe">
+      </div>
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="authEmail" required placeholder="demo@example.com">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="authPassword" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn-submit" id="authSubmitBtn">Sign In</button>
+    </form>
+
+    <div style="text-align:center; margin-top:1rem; font-size:0.85rem;">
+      <span id="authToggleText">Don't have an account?</span>
+      <button onclick="toggleAuthMode()" style="background:none; border:none; color:var(--primary); font-weight:bold; cursor:pointer; text-decoration:underline;" id="authToggleBtn">Create Account</button>
+    </div>
+  </div>
+
+  <!-- Expanded Product Quickview Modal -->
+  <div class="center-modal large-modal" id="quickViewModal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3>Product Details</h3>
+      <button style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;" onclick="closeAllModals()">&times;</button>
+    </div>
+    <div id="quickViewContent"></div>
+  </div>
+
+  <!-- User Profile Center Modal -->
+  <div class="center-modal large-modal" id="profileModal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3>User Profile Portal</h3>
+      <button style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;" onclick="closeAllModals()">&times;</button>
+    </div>
+
+    <!-- Header User Summary -->
+    <div class="profile-header-card">
+      <div class="profile-avatar-wrapper">
+        <img src="" id="profileAvatarImg" class="profile-avatar-img" alt="Avatar">
+      </div>
+      <div>
+        <h3 id="profileHeaderName">User Name</h3>
+        <p id="profileHeaderEmail" style="font-size:0.85rem; color:var(--text-muted);"></p>
+        <span class="membership-badge" id="profileBadge">VIP Member</span>
+      </div>
+    </div>
+
+    <!-- Profile Navigation Tabs -->
+    <div class="profile-nav-tabs">
+      <button class="profile-nav-tab active" id="tabBtn-overview" onclick="switchProfileTab('overview')">Overview</button>
+      <button class="profile-nav-tab" id="tabBtn-orders" onclick="switchProfileTab('orders')">Orders & Tracking</button>
+      <button class="profile-nav-tab" id="tabBtn-wishlist" onclick="switchProfileTab('wishlist')">Wishlist</button>
+      <button class="profile-nav-tab" id="tabBtn-addresses" onclick="switchProfileTab('addresses')">Addresses</button>
+      <button class="profile-nav-tab" id="tabBtn-settings" onclick="switchProfileTab('settings')">Edit Profile</button>
+    </div>
+
+    <!-- Tab 1: Overview & Rewards -->
+    <div id="pTab-overview" class="profile-tab-content">
+      <div class="profile-stats-grid">
+        <div class="stat-card">
+          <div class="stat-val" id="statPoints">0</div>
+          <div class="stat-lbl">Reward Points</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="statOrdersCount">0</div>
+          <div class="stat-lbl">Total Orders</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="statWishCount">0</div>
+          <div class="stat-lbl">Saved Items</div>
+        </div>
+      </div>
+
+      <div style="background:var(--background); padding:1rem; border-radius:8px; border:1px solid var(--border);">
+        <h4 style="margin-bottom:0.5rem;">🎉 Loyalty Rewards Tier</h4>
+        <p style="font-size:0.85rem; color:var(--text-muted);">You earn 1 point for every $1 spent. Redeem 100 points for a $10 discount coupon!</p>
+      </div>
+    </div>
+
+    <!-- Tab 2: Orders & Tracking -->
+    <div id="pTab-orders" class="profile-tab-content" style="display:none;">
+      <div class="form-group">
+        <input type="text" id="trackOrderInput" placeholder="Enter Order ID (e.g. ORD-9281) to track status..." oninput="trackOrder()">
+      </div>
+      <div id="trackerDisplay"></div>
+      <div id="ordersList" style="margin-top:1rem;"></div>
+    </div>
+
+    <!-- Tab 3: Wishlist -->
+    <div id="pTab-wishlist" class="profile-tab-content" style="display:none;">
+      <div style="display:flex; justify-content:space-between; margin-bottom:1rem; align-items:center;">
+        <h4>Saved Items</h4>
+        <button onclick="addAllWishlistToCart()" style="padding:0.4rem 0.8rem; background:var(--primary); color:#fff; border:none; border-radius:6px; cursor:pointer; font-weight:600;">Add All to Cart</button>
+      </div>
+      <div id="wishlistGrid" class="products-grid"></div>
+    </div>
+
+    <!-- Tab 4: Saved Addresses -->
+    <div id="pTab-addresses" class="profile-tab-content" style="display:none;">
+      <form onsubmit="handleSaveAddress(event)" style="margin-bottom:1.5rem;">
+        <h4 style="margin-bottom:0.5rem;">Add New Address</h4>
+        <div class="form-group">
+          <input type="text" id="addrLabel" required placeholder="Address Label (e.g. Home, Office)">
+        </div>
+        <div class="form-group">
+          <textarea id="addrDetails" required rows="2" placeholder="Full Address Street, City, Zip Code"></textarea>
+        </div>
+        <button type="submit" class="btn-submit" style="padding:0.5rem;">Save Address</button>
+      </form>
+
+      <h4>Saved Addresses</h4>
+      <div id="addressBookList" style="margin-top:0.5rem;"></div>
+    </div>
+
+    <!-- Tab 5: Settings & Edit Profile -->
+    <div id="pTab-settings" class="profile-tab-content" style="display:none;">
+      <form onsubmit="handleUpdateProfile(event)">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="editProfileName" required>
+        </div>
+        <div class="form-group">
+          <label>Profile Avatar URL</label>
+          <input type="url" id="editProfileAvatar" placeholder="https://picsum.photos/100">
+        </div>
+        <button type="submit" class="btn-submit">Save Changes</button>
+      </form>
+    </div>
+
+    <button onclick="handleLogout()" style="width:100%; background:var(--danger); color:#fff; border:none; padding:0.75rem; border-radius:8px; margin-top:1.5rem; cursor:pointer; font-weight:bold;">Sign Out</button>
+  </div>
+
+  <!-- Advanced Multi-Step Checkout Modal -->
+  <div class="center-modal" id="checkoutModal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3>Complete Checkout</h3>
+      <button style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;" onclick="closeAllModals()">&times;</button>
+    </div>
+    <form onsubmit="handleCompleteCheckout(event)">
+      <div class="form-group">
+        <label>Select Saved Address</label>
+        <select id="checkoutSavedAddress" onchange="applySavedAddressToCheckout(this.value)">
+          <option value="">-- Choose Address --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Shipping Address</label>
+        <input type="text" id="checkoutAddress" required placeholder="123 Innovation Way, Suite 100">
+      </div>
+      <div class="form-group">
+        <label>Delivery Option</label>
+        <select id="shippingSpeed" onchange="updateCartUI()">
+          <option value="standard">Standard Shipping (3-5 Days)</option>
+          <option value="express">Express Delivery (1-2 Days) - $15.00</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Payment Method</label>
+        <select>
+          <option>Credit Card (•••• 4242)</option>
+          <option>PayPal</option>
+          <option>Apple Pay</option>
+        </select>
+      </div>
+      <button type="submit" class="btn-submit">Place Order</button>
+    </form>
+  </div>
+
+  <!-- Printable Invoice Modal -->
+  <div class="center-modal" id="invoiceModal">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h3>Order Receipt</h3>
+      <button style="background:none; border:none; color:var(--text-muted); font-size:1.5rem; cursor:pointer;" onclick="closeAllModals()">&times;</button>
+    </div>
+    <div id="printableInvoice"></div>
+    <button class="btn-submit" onclick="window.print()" style="margin-top:1rem;">🖨️ Print Receipt</button>
+  </div>
+
+  <!-- Javascript Application Script -->
+  <script>
+    /* Currency Rates Configuration */
+    const currencies = {
+      USD: { symbol: "$", rate: 1.0 },
+      EUR: { symbol: "€", rate: 0.92 },
+      GBP: { symbol: "£", rate: 0.79 },
+      BDT: { symbol: "৳", rate: 110.0 }
+    };
+    let currentCurrency = "USD";
+
+    function formatPrice(amountUSD) {
+      const c = currencies[currentCurrency];
+      const val = amountUSD * c.rate;
+      return `${c.symbol}${val.toFixed(2)}`;
+    }
+
+    function changeCurrency(curr) {
+      currentCurrency = curr;
+      renderProducts();
+      updateCartUI();
+      showToast(`Currency changed to ${curr}`);
+    }
+
+    /* Countdown Timer */
+    let timerSeconds = 20530;
+    setInterval(() => {
+      timerSeconds--;
+      if(timerSeconds <= 0) timerSeconds = 86400;
+      const h = String(Math.floor(timerSeconds / 3600)).padStart(2, '0');
+      const m = String(Math.floor((timerSeconds % 3600) / 60)).padStart(2, '0');
+      const s = String(timerSeconds % 60).padStart(2, '0');
+      document.getElementById("salesTimer").textContent = `${h}:${m}:${s}`;
+    }, 1000);
+
+    /* Dynamic Product Dataset */
+    const products = [
+      {
+        id: 1, name: "Ergonomic Mechanical Keyboard", price: 149.99, category: "Peripherals", rating: 4.9, stock: 12,
+        variants: ["Space Gray", "Silver", "Midnight"],
+        images: ["https://picsum.photos/500/400?random=10", "https://picsum.photos/500/400?random=101"],
+        desc: "Hot-swappable mechanical switches housed in a CNC aluminum body.",
+        features: ["Hot-Swappable Switches", "Bluetooth 5.1 Wireless", "18-Mode RGB"],
+        specs: { SwitchType: "Gateron Brown", Battery: "4000 mAh", Weight: "950g" },
+        reviews: [{ user: "Alex M.", text: "Outstanding tactile feedback!", rating: 5 }]
+      },
+      {
+        id: 2, name: "Precision Wireless Mouse", price: 79.50, category: "Peripherals", rating: 4.7, stock: 25,
+        variants: ["Black", "White"],
+        images: ["https://picsum.photos/500/400?random=11"],
+        desc: "Ultra-low latency dual wireless optical sensor for precision workflow.",
+        features: ["26,000 DPI Sensor", "Ergonomic Grip", "USB-C Fast Charge"],
+        specs: { Sensor: "Hero Optical", Weight: "63g", BatteryLife: "70 Hours" },
+        reviews: [{ user: "Sarah L.", text: "Extremely smooth and lightweight.", rating: 4 }]
+      },
+      {
+        id: 3, name: "Ultra-Wide Light Bar", price: 59.00, category: "Lighting", rating: 4.8, stock: 8,
+        variants: ["Matte Black"],
+        images: ["https://picsum.photos/500/400?random=12"],
+        desc: "Anti-glare screen backlight bar featuring touch brightness controls.",
+        features: ["Zero Screen Glare", "Adjustable Color Temp", "Auto-Dim Sensor"],
+        specs: { Power: "USB Powered", CRI: ">95", Material: "Aluminum" },
+        reviews: [{ user: "Chris P.", text: "Saved my eyes during night shifts.", rating: 5 }]
+      },
+      {
+        id: 4, name: "Noise-Isolating Headphones", price: 199.99, category: "Audio", rating: 5.0, stock: 5,
+        variants: ["Silver", "Midnight"],
+        images: ["https://picsum.photos/500/400?random=13"],
+        desc: "Active noise canceling overhead studio monitors with spatial audio.",
+        features: ["Active Noise Cancellation", "40mm Drivers", "30-Hour Battery"],
+        specs: { Driver: "40mm Neodymium", Battery: "30h", Weight: "250g" },
+        reviews: [{ user: "David K.", text: "Best sound isolation in class.", rating: 5 }]
+      },
+      {
+        id: 5, name: "Aluminum Laptop Stand", price: 45.00, category: "Accessories", rating: 4.6, stock: 18,
+        variants: ["Silver", "Space Gray"],
+        images: ["https://picsum.photos/500/400?random=14"],
+        desc: "Ventilated ergonomic riser crafted from solid anodized aluminum.",
+        features: ["Heat Dissipation", "Ergonomic Angle", "Non-Slip Pads"],
+        specs: { Compatibility: "11-17 inch", Material: "Aluminum", Weight: "750g" },
+        reviews: [{ user: "Elena R.", text: "Sturdy and matches my MacBook perfectly.", rating: 5 }]
+      },
+      {
+        id: 6, name: "Minimalist Desk Mat", price: 29.99, category: "Accessories", rating: 4.7, stock: 30,
+        variants: ["Dark Gray", "Olive", "Navy"],
+        images: ["https://picsum.photos/500/400?random=15"],
+        desc: "Water-resistant felt and eco-leather desk pad for smooth mouse tracking.",
+        features: ["Water-Resistant", "Anti-Slip Rubber Base", "Stitched Edges"],
+        specs: { Size: "900x400mm", Thickness: "4mm", Material: "Eco-Leather/Felt" },
+        reviews: [{ user: "Mark T.", text: "Clean aesthetic and premium feel.", rating: 4 }]
+      },
+      {
+        id: 7, name: "USB-C Multi-Port Hub", price: 69.99, category: "Peripherals", rating: 4.5, stock: 14,
+        variants: ["Space Gray"],
+        images: ["https://picsum.photos/500/400?random=16"],
+        desc: "8-in-1 hub supporting 4K 60Hz HDMI, 100W Power Delivery, and SD Reader.",
+        features: ["100W PD Charging", "4K 60Hz HDMI", "Gigabit Ethernet"],
+        specs: { Ports: "8 Ports", HDMI: "4K 60Hz", TransferSpeed: "10Gbps" },
+        reviews: [{ user: "Rachel B.", text: "Essential dock for mobile setups.", rating: 5 }]
+      },
+      {
+        id: 8, name: "Studio Condenser Mic", price: 129.50, category: "Audio", rating: 4.8, stock: 9,
+        variants: ["Matte Black"],
+        images: ["https://picsum.photos/500/400?random=17"],
+        desc: "USB/XLR dual-connect broadcast microphone with cardioid pickup.",
+        features: ["Dual USB/XLR Output", "Built-in Pop Filter", "Zero-Latency Monitoring"],
+        specs: { PolarPattern: "Cardioid", SampleRate: "24-bit/96kHz", Connector: "USB-C / XLR" },
+        reviews: [{ user: "James S.", text: "Crystal clear audio for calls and streaming.", rating: 5 }]
+      },
+      {
+        id: 9, name: "Smart LED Strip Light", price: 34.99, category: "Lighting", rating: 4.4, stock: 22,
+        variants: ["RGBWW"],
+        images: ["https://picsum.photos/500/400?random=18"],
+        desc: "Wi-Fi enabled addressable ambient backlight strip with home automation.",
+        features: ["Matter Compatible", "Music Sync", "16 Million Colors"],
+        specs: { Length: "2 Meters", Wireless: "Wi-Fi + Bluetooth", Voltage: "12V" },
+        reviews: [{ user: "Leo N.", text: "Easy setup and dynamic colors.", rating: 4 }]
+      },
+      {
+        id: 10, name: "MagSafe Charging Pad", price: 39.00, category: "Accessories", rating: 4.6, stock: 40,
+        variants: ["Black", "White"],
+        images: ["https://picsum.photos/500/400?random=19"],
+        desc: "3-in-1 magnetic fast wireless charging dock for Phone, Watch, and Earbuds.",
+        features: ["15W Fast Charge", "Strong Magnetic Alignment", "Compact Design"],
+        specs: { Output: "15W Max", TargetDevices: "Phone / Watch / Pods", Cable: "Integrated USB-C" },
+        reviews: [{ user: "Anna K.", text: "De-cluttered my nightstand completely.", rating: 5 }]
+      },
+      {
+        id: 11, name: "4K Webcam Pro", price: 119.99, category: "Peripherals", rating: 4.7, stock: 11,
+        variants: ["Graphite"],
+        images: ["https://picsum.photos/500/400?random=20"],
+        desc: "Ultra HD webcam with HDR auto-framing and dual noise-reducing mics.",
+        features: ["4K UHD Resolution", "Auto HDR & Focus", "Privacy Shutter"],
+        specs: { Resolution: "4K 30fps / 1080p 60fps", FOV: "90 Degrees", Mic: "Dual Stereo" },
+        reviews: [{ user: "Brian W.", text: "Very sharp picture in low light.", rating: 5 }]
+      },
+      {
+        id: 12, name: "Desk Cable Organizer", price: 21.99, category: "Accessories", rating: 4.3, stock: 50,
+        variants: ["Black", "White"],
+        images: ["https://picsum.photos/500/400?random=21"],
+        desc: "Under-desk cable management tray with heavy-duty mounting clamps.",
+        features: ["No-Drill Clamp Mount", "Heavy Duty Steel", "Pass-Through Slots"],
+        specs: { Length: "43cm", Capacity: "5kg", Installation: "Clamp On" },
+        reviews: [{ user: "Kevin G.", text: "Hides all power strips cleanly.", rating: 4 }]
+      }
+    ];
+
+    /* Application State */
+    let cart = [];
+    let savedForLater = [];
+    let wishlist = [];
+    let orders = [];
+    let activeCategory = "All";
+    let activePromo = null;
+    let selectedVariants = {};
+    let isSignUpMode = false;
+
+    /* Extended User Profile State */
+    let currentUser = {
+      name: "Alex Johnson",
+      email: "alex.pro@example.com",
+      avatar: "https://picsum.photos/100/100?random=50",
+      points: 240,
+      addresses: [
+        { id: 1, label: "Home Base", details: "742 Evergreen Terrace, Springfield, OR 97477" }
+      ]
+    };
+
+    /* Initializer */
+    document.addEventListener("DOMContentLoaded", () => {
+      initCategories();
+      renderProducts();
+      updateCartUI();
+      syncUserAuthButton();
+    });
+
+    /* Theme Engine */
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute("data-theme");
+      const nextTheme = currentTheme === "dark" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", nextTheme);
+      showToast(`Switched to ${nextTheme} mode`);
+    }
+
+    /* Toast Notifications */
+    function showToast(message) {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.innerHTML = `<span>⚡</span><span>${message}</span>`;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = "slideIn 0.3s reverse forwards";
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+
+    /* Category Filter Pills */
+    function initCategories() {
+      const categories = ["All", ...new Set(products.map(p => p.category))];
+      const container = document.getElementById("categoryPillsContainer");
+      container.innerHTML = categories.map(cat => `
+        <button class="pill-btn ${cat === activeCategory ? 'active' : ''}" onclick="selectCategory('${cat}')">${cat}</button>
+      `).join('');
+    }
+
+    function selectCategory(cat) {
+      activeCategory = cat;
+      initCategories();
+      renderProducts();
+    }
+
+    function updatePriceLabel(val) {
+      document.getElementById("priceRangeLabel").textContent = formatPrice(val);
+    }
+
+    /* Product Grid Renderer */
+    function renderProducts() {
+      const searchVal = document.getElementById("searchInput").value.toLowerCase();
+      const sortVal = document.getElementById("sortFilter").value;
+      const maxPrice = parseFloat(document.getElementById("priceRange").value);
+
+      let filtered = products.filter(p => {
+        const matchesCategory = activeCategory === "All" || p.category === activeCategory;
+        const matchesSearch = p.name.toLowerCase().includes(searchVal) || p.desc.toLowerCase().includes(searchVal);
+        const matchesPrice = p.price <= maxPrice;
+        return matchesCategory && matchesSearch && matchesPrice;
+      });
+
+      if (sortVal === "price-low") filtered.sort((a, b) => a.price - b.price);
+      if (sortVal === "price-high") filtered.sort((a, b) => b.price - a.price);
+      if (sortVal === "rating") filtered.sort((a, b) => b.rating - a.rating);
+
+      document.getElementById("productCountLabel").textContent = `Showing ${filtered.length} products`;
+      const grid = document.getElementById("productGrid");
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align:center; padding:3rem; color:var(--text-muted);">No products found matching criteria.</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(p => {
+        const isWish = wishlist.includes(p.id);
+        const selectedVar = selectedVariants[p.id] || p.variants[0];
+        return `
+          <div class="product-card">
+            <span class="stock-badge">${p.stock} in stock</span>
+            <button class="wishlist-btn ${isWish ? 'active' : ''}" onclick="toggleWishlist(${p.id})">♥</button>
+            <div class="product-image-wrap" onclick="openQuickView(${p.id})">
+              <img src="${p.images[0]}" alt="${p.name}" class="product-image" loading="lazy">
+            </div>
+            <div class="product-info">
+              <span class="product-category-tag">${p.category} • ★ ${p.rating}</span>
+              <h3 class="product-title" onclick="openQuickView(${p.id})">${p.name}</h3>
+              <div class="variant-selector">
+                ${p.variants.map(v => `
+                  <span class="variant-chip ${v === selectedVar ? 'active' : ''}" onclick="selectVariant(${p.id}, '${v}')">${v}</span>
+                `).join('')}
+              </div>
+              <div class="product-footer">
+                <span class="product-price">${formatPrice(p.price)}</span>
+                <button class="btn-add-cart" onclick="addToCart(${p.id})">+ Add</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectVariant(productId, variant) {
+      selectedVariants[productId] = variant;
+      renderProducts();
+    }
+
+    /* Wishlist Operations */
+    function toggleWishlist(id) {
+      const idx = wishlist.indexOf(id);
+      if (idx > -1) {
+        wishlist.splice(idx, 1);
+        showToast("Removed from wishlist");
+      } else {
+        wishlist.push(id);
+        showToast("Added to wishlist!");
+      }
+      renderProducts();
+      renderWishlistTab();
+      updateProfileOverview();
+    }
+
+    function addAllWishlistToCart() {
+      if (wishlist.length === 0) return showToast("Wishlist is empty");
+      wishlist.forEach(id => addToCart(id, true));
+      showToast("All wishlist items added to cart!");
+      openCartDrawer();
+    }
+
+    function renderWishlistTab() {
+      const grid = document.getElementById("wishlistGrid");
+      const list = products.filter(p => wishlist.includes(p.id));
+      if (list.length === 0) {
+        grid.innerHTML = `<p style="grid-column:1/-1; color:var(--text-muted);">Your wishlist is empty.</p>`;
+        return;
+      }
+      grid.innerHTML = list.map(p => `
+        <div class="product-card">
+          <div class="product-image-wrap" onclick="openQuickView(${p.id})">
+            <img src="${p.images[0]}" class="product-image">
+          </div>
+          <div class="product-info">
+            <h4 class="product-title">${p.name}</h4>
+            <div class="product-footer">
+              <span class="product-price">${formatPrice(p.price)}</span>
+              <button class="btn-add-cart" onclick="addToCart(${p.id})">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    /* Cart State Operations */
+    function addToCart(productId, silent = false) {
+      const product = products.find(p => p.id === productId);
+      const variant = selectedVariants[productId] || product.variants[0];
+      const existing = cart.find(item => item.id === productId && item.variant === variant);
+
+      if (existing) {
+        existing.qty++;
+      } else {
+        cart.push({ ...product, variant, qty: 1 });
+      }
+
+      updateCartUI();
+      if (!silent) {
+        showToast(`${product.name} (${variant}) added to cart!`);
+        openCartDrawer();
+      }
+    }
+
+    function changeQty(id, variant, delta) {
+      const item = cart.find(i => i.id === id && i.variant === variant);
+      if (!item) return;
+      item.qty += delta;
+      if (item.qty <= 0) {
+        cart = cart.filter(i => !(i.id === id && i.variant === variant));
+      }
+      updateCartUI();
+    }
+
+    function clearCart() {
+      cart = [];
+      updateCartUI();
+      showToast("Cart cleared");
+    }
+
+    function moveToSaveForLater(id, variant) {
+      const itemIdx = cart.findIndex(i => i.id === id && i.variant === variant);
+      if (itemIdx > -1) {
+        const [item] = cart.splice(itemIdx, 1);
+        savedForLater.push(item);
+        updateCartUI();
+        showToast("Moved item to Saved For Later");
+      }
+    }
+
+    function restoreFromSaved(id, variant) {
+      const itemIdx = savedForLater.findIndex(i => i.id === id && i.variant === variant);
+      if (itemIdx > -1) {
+        const [item] = savedForLater.splice(itemIdx, 1);
+        cart.push(item);
+        updateCartUI();
+        showToast("Restored item to Cart");
+      }
+    }
+
+    function applyPromoCode() {
+      const code = document.getElementById("promoCodeInput").value.trim().toUpperCase();
+      if (code === "AURA10") {
+        activePromo = { code: "AURA10", discount: 0.10 };
+        showToast("10% Promo Code Applied!");
+      } else if (code === "SAVE20") {
+        activePromo = { code: "SAVE20", discount: 0.20 };
+        showToast("20% Promo Code Applied!");
+      } else {
+        showToast("Invalid Promo Code");
+        return;
+      }
+      updateCartUI();
+    }
+
+    /* Cart UI Sync */
+    function updateCartUI() {
+      const countEl = document.getElementById("cartCount");
+      const totalItems = cart.reduce((acc, i) => acc + i.qty, 0);
+      countEl.textContent = totalItems;
+
+      const itemsContainer = document.getElementById("cartItems");
+      if (cart.length === 0) {
+        itemsContainer.innerHTML = `<div style="text-align:center; padding:2rem; color:var(--text-muted);">Your cart is empty.</div>`;
+      } else {
+        itemsContainer.innerHTML = cart.map(item => `
+          <div class="cart-item">
+            <img src="${item.images[0]}" class="cart-item-img">
+            <div class="cart-item-details">
+              <div class="cart-item-title">${item.name}</div>
+              <div class="cart-item-variant">Variant: ${item.variant}</div>
+              <div class="cart-item-price">${formatPrice(item.price)}</div>
+              <div class="qty-controls">
+                <button class="qty-btn" onclick="changeQty(${item.id}, '${item.variant}', -1)">-</button>
+                <span style="font-size:0.85rem; font-weight:bold;">${item.qty}</span>
+                <button class="qty-btn" onclick="changeQty(${item.id}, '${item.variant}', 1)">+</button>
+              </div>
+              <button class="cart-action-link" onclick="moveToSaveForLater(${item.id}, '${item.variant}')">Save for later</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const savedSection = document.getElementById("savedForLaterSection");
+      const savedContainer = document.getElementById("savedForLaterItems");
+      if (savedForLater.length > 0) {
+        savedSection.style.display = "block";
+        savedContainer.innerHTML = savedForLater.map(item => `
+          <div class="cart-item">
+            <img src="${item.images[0]}" class="cart-item-img">
+            <div class="cart-item-details">
+              <div class="cart-item-title">${item.name}</div>
+              <div class="cart-item-price">${formatPrice(item.price)}</div>
+              <button class="cart-action-link" onclick="restoreFromSaved(${item.id}, '${item.variant}')">Move to Cart</button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        savedSection.style.display = "none";
+      }
+
+      const subtotalUSD = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+      const thresholdUSD = 150;
+      const progress = Math.min(100, (subtotalUSD / thresholdUSD) * 100);
+      document.getElementById("shippingProgressFill").style.width = `${progress}%`;
+      const shippingLabel = document.getElementById("freeShippingLabel");
+
+      if (subtotalUSD >= thresholdUSD) {
+        shippingLabel.innerHTML = `🎉 You unlocked <strong>Free Standard Shipping</strong>!`;
+      } else if (subtotalUSD > 0) {
+        const remaining = thresholdUSD - subtotalUSD;
+        shippingLabel.innerHTML = `Add <strong>${formatPrice(remaining)}</strong> more to unlock Free Shipping`;
+      } else {
+        shippingLabel.textContent = `Free shipping on orders over ${formatPrice(thresholdUSD)}`;
+      }
+
+      let discountUSD = 0;
+      if (activePromo) {
+        discountUSD = subtotalUSD * activePromo.discount;
+        document.getElementById("promoTagContainer").innerHTML = `
+          <div class="applied-promo-tag">
+            🏷️ Code ${activePromo.code} (${activePromo.discount * 100}% Off) Applied
+          </div>
+        `;
+      } else {
+        document.getElementById("promoTagContainer").innerHTML = "";
+      }
+
+      const shippingSpeed = document.getElementById("shippingSpeed") ? document.getElementById("shippingSpeed").value : "standard";
+      const shippingCostUSD = (subtotalUSD >= thresholdUSD || subtotalUSD === 0 || shippingSpeed === "standard") ? 0 : 15.0;
+      const finalTotalUSD = Math.max(0, subtotalUSD - discountUSD + shippingCostUSD);
+
+      document.getElementById("cartSummary").innerHTML = `
+        <div class="summary-line"><span>Subtotal:</span><span>${formatPrice(subtotalUSD)}</span></div>
+        ${activePromo ? `<div class="summary-line" style="color:var(--primary);"><span>Discount:</span><span>-${formatPrice(discountUSD)}</span></div>` : ''}
+        <div class="summary-line"><span>Shipping:</span><span>${shippingCostUSD === 0 ? 'FREE' : formatPrice(shippingCostUSD)}</span></div>
+        <div class="summary-line summary-total"><span>Total:</span><span>${formatPrice(finalTotalUSD)}</span></div>
+      `;
+    }
+
+    /* Modal Navigation System */
+    function openCartDrawer() {
+      closeAllModals();
+      document.getElementById("cartDrawer").classList.add("active");
+      document.getElementById("overlay").classList.add("active");
+    }
+
+    function openAuthModal() {
+      closeAllModals();
+      document.getElementById("authModal").classList.add("active");
+      document.getElementById("overlay").classList.add("active");
+    }
+
+    function openCheckoutModal() {
+      if (cart.length === 0) return showToast("Your cart is empty");
+      closeAllModals();
+
+      /* Sync Saved Addresses to Checkout Dropdown */
+      const addrSelect = document.getElementById("checkoutSavedAddress");
+      if (currentUser && currentUser.addresses.length > 0) {
+        addrSelect.innerHTML = `<option value="">-- Choose Saved Address --</option>` +
+          currentUser.addresses.map(a => `<option value="${a.details}">${a.label}: ${a.details}</option>`).join('');
+      } else {
+        addrSelect.innerHTML = `<option value="">No saved addresses found</option>`;
+      }
+
+      document.getElementById("checkoutModal").classList.add("active");
+      document.getElementById("overlay").classList.add("active");
+    }
+
+    function applySavedAddressToCheckout(addr) {
+      if (addr) document.getElementById("checkoutAddress").value = addr;
+    }
+
+    function closeAllModals() {
+      document.querySelectorAll(".center-modal, .cart-drawer, .overlay").forEach(el => el.classList.remove("active"));
+    }
+
+    /* Extended Quickview Modal */
+    function openQuickView(id) {
+      const p = products.find(prod => prod.id === id);
+      if (!p) return;
+      closeAllModals();
+
+      const container = document.getElementById("quickViewContent");
+      container.innerHTML = `
+        <div class="qv-grid">
+          <div>
+            <img src="${p.images[0]}" id="qvMainImage" class="gallery-main">
+            <div class="gallery-thumbs">
+              ${p.images.map((img, i) => `
+                <img src="${img}" class="gallery-thumb ${i === 0 ? 'active' : ''}" onclick="changeQVImage(this, '${img}')">
+              `).join('')}
+            </div>
+          </div>
+          <div>
+            <span class="product-category-tag">${p.category}</span>
+            <h2>${p.name}</h2>
+            <div style="font-size:1.25rem; font-weight:bold; margin:0.5rem 0; color:var(--primary);">${formatPrice(p.price)}</div>
+            <p style="font-size:0.9rem; color:var(--text-muted);">${p.desc}</p>
+            
+            <h4 style="margin-top:1rem; font-size:0.85rem;">Key Features:</h4>
+            <ul class="feature-list">
+              ${p.features.map(f => `<li>${f}</li>`).join('')}
+            </ul>
+
+            <h4 style="margin-top:1rem; font-size:0.85rem;">Specifications:</h4>
+            <table class="specs-table">
+              ${Object.entries(p.specs).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}
+            </table>
+
+            <button class="btn-submit" onclick="addToCart(${p.id}); closeAllModals();">Add to Shopping Cart</button>
+          </div>
+        </div>
+
+        <div style="margin-top:1.5rem; border-top:1px solid var(--border); padding-top:1rem;">
+          <h4>Customer Reviews</h4>
+          ${p.reviews.map(r => `
+            <div class="review-item">
+              <strong>${r.user}</strong> — <span style="color:var(--warning);">★ ${r.rating}</span>
+              <p style="margin-top:2px;">"${r.text}"</p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+
+      document.getElementById("quickViewModal").classList.add("active");
+      document.getElementById("overlay").classList.add("active");
+    }
+
+    function changeQVImage(thumb, src) {
+      document.querySelectorAll(".gallery-thumb").forEach(t => t.classList.remove("active"));
+      thumb.classList.add("active");
+      document.getElementById("qvMainImage").src = src;
+    }
+
+    /* ==========================================================================
+       7. Advanced Profile & Authentication Management Engine
+       ========================================================================== */
+    function syncUserAuthButton() {
+      const btn = document.getElementById("authBtn");
+      if (currentUser) {
+        btn.innerHTML = `
+          <img src="${currentUser.avatar}" class="nav-avatar-sm" alt="User">
+          <span>${currentUser.name.split(' ')[0]}</span>
+        `;
+        btn.onclick = () => openProfileModal();
+      } else {
+        btn.innerHTML = `<span>Sign In</span>`;
+        btn.onclick = () => openAuthModal();
+      }
+    }
+
+    function toggleAuthMode() {
+      isSignUpMode = !isSignUpMode;
+      document.getElementById("nameGroup").style.display = isSignUpMode ? "block" : "none";
+      document.getElementById("authModalTitle").textContent = isSignUpMode ? "Create Account" : "Sign In";
+      document.getElementById("authSubmitBtn").textContent = isSignUpMode ? "Register Now" : "Sign In";
+      document.getElementById("authToggleText").textContent = isSignUpMode ? "Already have an account?" : "Don't have an account?";
+      document.getElementById("authToggleBtn").textContent = isSignUpMode ? "Sign In" : "Create Account";
+    }
+
+    function handleAuthSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById("authEmail").value;
+      const name = isSignUpMode ? document.getElementById("authName").value : email.split('@')[0];
+
+      currentUser = {
+        name: name || "User",
+        email: email,
+        avatar: `https://picsum.photos/100/100?random=${Math.floor(Math.random()*100)}`,
+        points: 100,
+        addresses: []
+      };
+
+      syncUserAuthButton();
+      closeAllModals();
+      showToast(isSignUpMode ? `Welcome to AuraStore, ${currentUser.name}!` : `Signed in as ${currentUser.name}`);
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      syncUserAuthButton();
+      closeAllModals();
+      showToast("Logged out successfully");
+    }
+
+    function openProfileModal() {
+      if (!currentUser) return openAuthModal();
+      closeAllModals();
+      updateProfileOverview();
+      renderOrdersList();
+      renderWishlistTab();
+      renderAddressBook();
+      
+      /* Populate Edit Profile Fields */
+      document.getElementById("editProfileName").value = currentUser.name;
+      document.getElementById("editProfileAvatar").value = currentUser.avatar;
+
+      document.getElementById("profileModal").classList.add("active");
+      document.getElementById("overlay").classList.add("active");
+    }
+
+    function switchProfileTab(tabName) {
+      document.querySelectorAll(".profile-nav-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".profile-tab-content").forEach(c => c.style.display = "none");
+      
+      document.getElementById(`tabBtn-${tabName}`).classList.add("active");
+      document.getElementById(`pTab-${tabName}`).style.display = "block";
+    }
+
+    function updateProfileOverview() {
+      if (!currentUser) return;
+      document.getElementById("profileAvatarImg").src = currentUser.avatar;
+      document.getElementById("profileHeaderName").textContent = currentUser.name;
+      document.getElementById("profileHeaderEmail").textContent = currentUser.email;
+      
+      document.getElementById("statPoints").textContent = currentUser.points;
+      document.getElementById("statOrdersCount").textContent = orders.length;
+      document.getElementById("statWishCount").textContent = wishlist.length;
+
+      /* Dynamic Rewards Tier Badge */
+      const badge = document.getElementById("profileBadge");
+      if (currentUser.points >= 500) {
+        badge.textContent = "Platinum VIP";
+      } else if (currentUser.points >= 200) {
+        badge.textContent = "Gold VIP";
+      } else {
+        badge.textContent = "Silver Member";
+      }
+    }
+
+    function handleUpdateProfile(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+      currentUser.name = document.getElementById("editProfileName").value;
+      const avatarVal = document.getElementById("editProfileAvatar").value;
+      if (avatarVal) currentUser.avatar = avatarVal;
+
+      syncUserAuthButton();
+      updateProfileOverview();
+      showToast("Profile information updated!");
+    }
+
+    function handleSaveAddress(e) {
+      e.preventDefault();
+      if (!currentUser) return;
+      const label = document.getElementById("addrLabel").value;
+      const details = document.getElementById("addrDetails").value;
+
+      currentUser.addresses.push({ id: Date.now(), label, details });
+      document.getElementById("addrLabel").value = "";
+      document.getElementById("addrDetails").value = "";
+
+      renderAddressBook();
+      showToast("Address saved!");
+    }
+
+    function deleteAddress(id) {
+      if (!currentUser) return;
+      currentUser.addresses = currentUser.addresses.filter(a => a.id !== id);
+      renderAddressBook();
+      showToast("Address removed");
+    }
+
+    function renderAddressBook() {
+      const container = document.getElementById("addressBookList");
+      if (!currentUser || currentUser.addresses.length === 0) {
+        container.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted);">No saved addresses.</p>`;
+        return;
+      }
+      container.innerHTML = currentUser.addresses.map(a => `
+        <div style="background:var(--background); border:1px solid var(--border); padding:0.75rem; border-radius:8px; margin-bottom:0.5rem; display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <strong>${a.label}</strong>
+            <p style="font-size:0.85rem; color:var(--text-muted);">${a.details}</p>
+          </div>
+          <button onclick="deleteAddress(${a.id})" style="background:none; border:none; color:var(--danger); cursor:pointer; font-size:0.8rem; font-weight:bold;">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    /* Checkout & Order Generation */
+    function expressCheckout(provider) {
+      showToast(`Initiating ${provider} Express Checkout...`);
+      setTimeout(() => {
+        handleCompleteCheckout(null, provider);
+      }, 1000);
+    }
+
+    function handleCompleteCheckout(e, method = "Standard Checkout") {
+      if (e) e.preventDefault();
+      const orderId = `ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+      const subtotalUSD = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+      const discountUSD = activePromo ? subtotalUSD * activePromo.discount : 0;
+      const finalTotalUSD = subtotalUSD - discountUSD;
+
+      const newOrder = {
+        id: orderId,
+        date: new Date().toLocaleDateString(),
+        items: [...cart],
+        total: finalTotalUSD,
+        status: "Processing",
+        step: 1
+      };
+
+      orders.unshift(newOrder);
+
+      /* Award Rewards Points (1 point per dollar spent) */
+      if (currentUser) {
+        currentUser.points += Math.floor(finalTotalUSD);
+      }
+
+      cart = [];
+      activePromo = null;
+      updateCartUI();
+      closeAllModals();
+
+      renderInvoice(newOrder);
+      document.getElementById("invoiceModal").classList.add("active");
+      document.getElementById("overlay").classList.add("active");
+      showToast(`Order ${orderId} placed! Earned +${Math.floor(finalTotalUSD)} Points!`);
+    }
+
+    /* Package Tracking Engine */
+    function quickTrackOrder() {
+      const val = document.getElementById("quickTrackInput").value.trim();
+      if (!val) return showToast("Enter an Order ID");
+      openProfileModal();
+      switchProfileTab("orders");
+      document.getElementById("trackOrderInput").value = val;
+      trackOrder();
+    }
+
+    function trackOrder() {
+      const q = document.getElementById("trackOrderInput").value.trim().toUpperCase();
+      const display = document.getElementById("trackerDisplay");
+
+      if (!q) { display.innerHTML = ""; return; }
+
+      const found = orders.find(o => o.id === q);
+      if (!found) {
+        display.innerHTML = `<p style="color:var(--danger); font-size:0.85rem;">Order ID not found. Try sample order ID from your history.</p>`;
+        return;
+      }
+
+      display.innerHTML = `
+        <div style="background:var(--card-bg); border:1px solid var(--border); padding:1rem; border-radius:8px; margin-top:0.5rem;">
+          <div style="display:flex; justify-content:space-between; font-weight:bold;">
+            <span>Tracking: ${found.id}</span>
+            <span style="color:var(--primary);">${found.status}</span>
+          </div>
+          <div class="tracker-steps">
+            <div class="tracker-step ${found.step >= 1 ? 'completed' : ''}">✔ Placed</div>
+            <div class="tracker-step ${found.step >= 2 ? 'completed' : ''}">📦 Processing</div>
+            <div class="tracker-step ${found.step >= 3 ? 'completed' : ''}">🚚 Shipped</div>
+            <div class="tracker-step ${found.step >= 4 ? 'completed' : ''}">🏠 Delivered</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderOrdersList() {
+      const container = document.getElementById("ordersList");
+      if (orders.length === 0) {
+        container.innerHTML = `<p style="color:var(--text-muted); font-size:0.85rem;">No order history found.</p>`;
+        return;
+      }
+
+      container.innerHTML = orders.map(o => `
+        <div style="background:var(--background); padding:0.85rem; border-radius:8px; border:1px solid var(--border); margin-bottom:0.5rem; font-size:0.85rem;">
+          <div style="display:flex; justify-content:space-between; font-weight:bold;">
+            <span>${o.id} — ${o.date}</span>
+            <span>${formatPrice(o.total)}</span>
+          </div>
+          <div style="color:var(--text-muted); margin-top:4px;">Items: ${o.items.map(i => `${i.name} (${i.qty})`).join(', ')}</div>
+          <button onclick="renderInvoiceById('${o.id}')" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:bold; margin-top:4px; padding:0;">View Receipt</button>
+        </div>
+      `).join('');
+    }
+
+    function renderInvoiceById(id) {
+      const order = orders.find(o => o.id === id);
+      if (!order) return;
+      closeAllModals();
+      renderInvoice(order);
+      document.getElementById("invoiceModal").classList.add("active");
+      document.getElementById("overlay").classList.add("active");
+    }
+
+    /* Invoice Printer Template */
+    function renderInvoice(order) {
+      document.getElementById("printableInvoice").innerHTML = `
+        <div style="padding:1rem; border:1px solid var(--border); border-radius:8px; background:var(--card-bg);">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:1rem;">
+            <h2>⚡ AuraStore Receipt</h2>
+            <span style="font-weight:bold; color:var(--text-muted);">${order.id}</span>
+          </div>
+          <div style="margin:1rem 0; font-size:0.85rem;">
+            <p><strong>Customer:</strong> ${currentUser ? currentUser.name : 'Guest Customer'}</p>
+            <p><strong>Date:</strong> ${order.date}</p>
+            <p><strong>Status:</strong> ${order.status}</p>
+          </div>
+          <table style="width:100%; font-size:0.85rem; border-collapse:collapse; margin:1rem 0;">
+            <thead>
+              <tr style="border-bottom:1px solid var(--border); text-align:left;">
+                <th style="padding:4px 0;">Item</th>
+                <th>Qty</th>
+                <th style="text-align:right;">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${order.items.map(i => `
+                <tr style="border-bottom:1px solid var(--border);">
+                  <td style="padding:6px 0;">${i.name} (${i.variant})</td>
+                  <td>${i.qty}</td>
+                  <td style="text-align:right;">${formatPrice(i.price * i.qty)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div style="text-align:right; font-weight:800; font-size:1.1rem; margin-top:1rem;">
+            Total Amount: ${formatPrice(order.total)}
+          </div>
+        </div>
+      `;
+    }
+  </script>
 </body>
 </html>
